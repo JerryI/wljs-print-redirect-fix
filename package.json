@@ -10,7 +10,7 @@
         "Kernel.wl"        
       ],      
       "priority": -1000,
-      "category": "Kernel"
+      "category": "User's GUI"
     },
     "repository": {
       "type": "git",
