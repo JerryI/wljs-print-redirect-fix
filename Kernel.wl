@@ -7,6 +7,9 @@ BeginPackage["Notebook`Kernel`PrintRedirect`", {
 
 Begin["`Internal`"]
 
+time = AbsoluteTime[];
+cnt = 0;
+
 DefineOutputStreamMethod["MasterEchoPrint",
    {
       "ConstructorFunction" -> 
@@ -28,11 +31,28 @@ DefineOutputStreamMethod["MasterEchoPrint",
      Block[{$Output = {}},
         With[{str = bytes // ByteArray // ByteArrayToString // StringTrim},
             If[StringLength[str] > 0 && str =!= "Null" && str =!= ">> Null" && !StringMatchQ[str, "OutputStream"~~__],
-                If[AssociationQ[Global`$EvaluationContext],
-                    CellPrint[str, "Display"->"print"];
+                
+                If[AbsoluteTime[] - time > 1,
+                    time = AbsoluteTime[];
+                    cnt = 0;
+                ];
+
+               If[cnt >= 0, 
+
+                cnt = cnt + 1;
+
+                If[cnt > 7,
+                    cnt = -1;
+                    EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["System"], "Too many print messages. The output was suppressed"]; 
                 ,
-                    EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], str]; 
-                ];            
+
+                    If[AssociationQ[Global`$EvaluationContext],
+                        CellPrint[str, "Display"->"print"];
+                    ,
+                        EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], str]; 
+                    ];       
+                ]; 
+              ];    
             ];
         ];
      ];
