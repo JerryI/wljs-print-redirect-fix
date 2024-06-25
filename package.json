@@ -6,10 +6,12 @@
       "frontend": [
         "Frontend.wl"        
       ],
+      "js": "kernel.js",
+      "minjs": "kernel.js",
       "kernel": [
         "Kernel.wl"        
       ],      
-      "priority": -1000,
+      "priority": 10000,
       "category": "User's GUI"
     },
     "repository": {

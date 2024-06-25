@@ -1,7 +1,8 @@
 BeginPackage["Notebook`Kernel`PrintRedirect`", {
     "JerryI`Misc`Events`",
     "JerryI`Misc`Events`Promise`",
-    "JerryI`Misc`Async`"
+    "JerryI`Misc`Async`",
+    "Notebook`CellOperations`"
 }];
 
 Begin["`Internal`"]
@@ -16,7 +17,7 @@ DefineOutputStreamMethod["MasterEchoPrint",
      ] ],
   
   "CloseFunction" -> 
-   Function[state,  ClearAll[state]],
+   Function[state,  ClearAll[state] ],
   
   "StreamPositionFunction" -> Function[state, {state["pos"], state}],
   
@@ -27,7 +28,11 @@ DefineOutputStreamMethod["MasterEchoPrint",
      Block[{$Output = {}},
         With[{str = bytes // ByteArray // ByteArrayToString // StringTrim},
             If[StringLength[str] > 0 && str =!= "Null" && str =!= ">> Null" && !StringMatchQ[str, "OutputStream"~~__],
-                EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], str]; 
+                If[AssociationQ[Global`$EvaluationContext],
+                    CellPrint[str, "Display"->"print"];
+                ,
+                    EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], str]; 
+                ];            
             ];
         ];
      ];
