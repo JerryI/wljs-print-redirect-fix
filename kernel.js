@@ -29,11 +29,11 @@ class SystemPrintCells {
 
       if (RegExp(/\(\*/gm).exec(str)) {
         //spawn a code editor
-        console.warn({str});
+        console.log({str});
         core.EditorView([['JSObject', str]], {global: this.global, element: elt}).then((succs) => {}, (reject) => {
           elt.innerText = reject;
         });
-        
+
         return this;
       } 
 
