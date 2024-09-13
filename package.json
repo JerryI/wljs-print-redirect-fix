@@ -1,6 +1,6 @@
 {
     "name": "wljs-print-redirect-fix",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "An override to $Output, that redirects all messages to notifications",
     "wljs-meta": {
       "frontend": [

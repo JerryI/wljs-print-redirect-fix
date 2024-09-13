@@ -6,8 +6,14 @@ function unicodeToChar(text) {
   }
 
 class SystemPrintCells {
+    global = {};
+
     dispose() {
-      
+      if (this.global.stack) {
+        for (const obj of Object.values(this.global.stack))  {
+          obj.dispose();
+        }
+      }
     }
     
     constructor(parent, data) {
@@ -20,6 +26,16 @@ class SystemPrintCells {
       parent.element.appendChild(elt);
       parent.element.classList.add('padding-fix');
       let str = data;
+
+      if (RegExp(/\(\*/gm).exec(str)) {
+        //spawn a code editor
+        console.warn({str});
+        core.EditorView([['JSObject', str]], {global: this.global, element: elt}).then((succs) => {}, (reject) => {
+          elt.innerText = reject;
+        });
+        
+        return this;
+      } 
 
       if (str.charAt(0) === '"') {
         str = str.slice(1,-1);

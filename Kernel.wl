@@ -16,6 +16,7 @@ DefineOutputStreamMethod["MasterEchoPrint",
    Function[{streamname, isAppend, caller, opts},
     With[{state = Unique["PassthroughOutputStream"]},
      state["pos"] = 0;
+     state["buffer"] = {};
      {True, state}
      ] ],
   
@@ -23,13 +24,10 @@ DefineOutputStreamMethod["MasterEchoPrint",
    Function[state,  ClearAll[state] ],
   
   "StreamPositionFunction" -> Function[state, {state["pos"], state}],
-  
-  "WriteFunction" ->
-   Function[{state, bytes},
-    Module[{result, nBytes},
-     nBytes = Length[bytes];
-     Block[{$Output = {}},
-        With[{str = bytes // ByteArray // ByteArrayToString // StringTrim},
+
+  "FlushFunction" -> Function[{state},
+    Block[{$Output = {}},
+        With[{str = (Join @@ state["buffer"]) // ByteArrayToString // StringTrim},
             If[StringLength[str] > 0 && str =!= "Null" && str =!= ">> Null" && !StringMatchQ[str, "OutputStream"~~__],
                 
                 If[AbsoluteTime[] - time > 1,
@@ -47,15 +45,26 @@ DefineOutputStreamMethod["MasterEchoPrint",
                 ,
 
                     If[AssociationQ[Global`$EvaluationContext],
-                        CellPrint[str, "Display"->"print"];
+                        CellPrint[ToString[ToExpression[str, InputForm], StandardForm], "Display"->"print"];
                     ,
-                        EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], str]; 
+                        EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], ToString[ToExpression[str, InputForm], StandardForm] ]; 
                     ];       
                 ]; 
               ];    
             ];
-        ];
-     ];
+        ];   
+    ]; 
+    state["buffer"] = {};
+
+    {Null, state}
+  ],
+  
+  "WriteFunction" ->
+   Function[{state, bytes},
+    Module[{result, nBytes},
+     nBytes = Length[bytes];
+     
+    state["buffer"] = Append[state["buffer"], ByteArray[bytes] ];
      state["pos"] += nBytes;
      {nBytes, state}
      ]
