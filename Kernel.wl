@@ -45,7 +45,11 @@ DefineOutputStreamMethod["MasterEchoPrint",
                 ,
 
                     If[AssociationQ[Global`$EvaluationContext],
-                        CellPrint[ToString[ToExpression[str, InputForm], StandardForm], "Display"->"print"];
+                        If[StringTake[str, 2] == ">>",
+                            CellPrint[str, "Display"->"print"];
+                        ,
+                            CellPrint[ToString[ToExpression[str, InputForm], StandardForm], "Display"->"print"];
+                        ]
                     ,
                         EventFire[Internal`Kernel`Stdout[ Internal`Kernel`Hash ], Notifications`NotificationMessage["Print"], ToString[ToExpression[str, InputForm], StandardForm] ]; 
                     ];       
